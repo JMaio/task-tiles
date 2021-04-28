@@ -34,10 +34,10 @@ router.register(r'tasks', views.TaskViewSet)
 
 
 urlpatterns = [
-    path('api/v1/', include(router.urls)),
     path('admin/', admin.site.urls),
+    path('api/v1/', include(router.urls)),
     # https://www.django-rest-framework.org/api-guide/schemas/#generating-a-dynamic-schema-with-schemaview
-    path('openapi.json', get_schema_view(
+    path('api/v1/openapi.json', get_schema_view(
         title="Task Tiles",
         description="A task tile Open API",
         version="0.1.0",
