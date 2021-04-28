@@ -5,7 +5,10 @@ name = "pypi"
 
 [packages]
 django = "<3.0,>=2.2"
-djangorestframework = "==3.10"
+djangorestframework = "*" # 3.10 had an error with uritemplate for OpenAPI schema
+uritemplate = "*"
+pyyaml = "*"
+autopep8 = "*"
 
 [dev-packages]
 

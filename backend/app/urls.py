@@ -17,6 +17,9 @@ from django.contrib import admin
 from django.urls import include, path
 
 from rest_framework import routers
+from rest_framework.schemas import get_schema_view
+from rest_framework.renderers import JSONOpenAPIRenderer
+
 from tiles import views
 
 
@@ -25,7 +28,20 @@ router.register(r'tiles', views.TileViewSet)
 router.register(r'tasks', views.TaskViewSet)
 
 
+# schema_url_patterns = [
+#     path('api/v1/', include(router.urls)),
+# ]
+
+
 urlpatterns = [
     path('api/v1/', include(router.urls)),
     path('admin/', admin.site.urls),
+    # https://www.django-rest-framework.org/api-guide/schemas/#generating-a-dynamic-schema-with-schemaview
+    path('openapi.json', get_schema_view(
+        title="Task Tiles",
+        description="A task tile Open API",
+        version="0.1.0",
+        renderer_classes=[JSONOpenAPIRenderer]
+    )),
+
 ]
