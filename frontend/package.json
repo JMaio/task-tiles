@@ -60,5 +60,10 @@
     "openapi-client-axios": "^3.13.1",
     "openapi-client-axios-typegen": "^3.13.1",
     "prettier": "^2.2.1"
+  },
+  "dependenciesMeta": {
+    "webpack-dev-server": {
+      "unplugged": true
+    }
   }
 }

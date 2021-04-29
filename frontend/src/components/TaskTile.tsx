@@ -9,6 +9,7 @@ import {
   DialogContent,
   DialogTitle,
   Divider,
+  Grid,
   IconButton,
   MobileStepper,
   Typography,
@@ -17,8 +18,9 @@ import { KeyboardArrowLeft, KeyboardArrowRight } from "@material-ui/icons";
 import DeleteIcon from "@material-ui/icons/Delete";
 import EditIcon from "@material-ui/icons/Edit";
 import moment from "moment";
+import { useSnackbar } from "notistack";
 import React, { useEffect, useState } from "react";
-import { Client as TileApiClient, Paths } from "../api/client";
+import { Paths } from "../api/client";
 import { ApiClientType } from "../App";
 import { EditTaskForm, EditTileForm } from "./Forms";
 
@@ -31,26 +33,43 @@ export function TaskTile({
   api: ApiClientType;
   tile: Paths.RetrieveTile.Responses.$200;
 }) {
-  const [taskId, setTaskId] = useState(0);
-
   const [localTile, updateLocalTile] = useState<typeof tile>(tile);
   const nTasks = localTile.tasks.length;
+
+  const [taskStepperIndex, setTaskStepperIndex] = useState(0);
 
   const [
     currentTask,
     setCurrentTask,
-  ] = useState<Paths.RetrieveTask.Responses.$200>();
+  ] = useState<Paths.RetrieveTask.Responses.$200>(localTile.tasks[0]);
+
+  // stores changes made to a task without querying the API
+  const updateCurrentTask = (
+    updatedTask: Paths.RetrieveTask.Responses.$200
+  ) => {
+    updateLocalTile((t: typeof tile) => {
+      t.tasks[taskStepperIndex] = updatedTask;
+      setCurrentTask(updatedTask);
+      return t;
+    });
+  };
 
   useEffect(() => {
-    setCurrentTask(localTile.tasks[taskId]);
-  }, [taskId, localTile]);
+    setCurrentTask(localTile.tasks[taskStepperIndex]);
+  }, [taskStepperIndex, localTile]);
 
   const handleNavigate = (dir: number) => {
-    setTaskId((prev) => mod(prev + dir, nTasks));
+    setTaskStepperIndex((prev) => mod(prev + dir, nTasks));
   };
 
   const [editTile, setEditTile] = useState(false);
   const [editTask, setEditTask] = useState(false);
+
+  // eslint-disable-next-line
+  const { enqueueSnackbar, closeSnackbar } = useSnackbar();
+
+  const dummySnackbar = () =>
+    enqueueSnackbar("This is a placeholder for this functionality");
 
   return (
     <>
@@ -62,12 +81,7 @@ export function TaskTile({
             style={{ height: 120 }}
           />
           <CardContent>
-            <Typography
-              gutterBottom
-              variant="h5"
-              component="h1"
-              style={{ marginBottom: 0 }}
-            >
+            <Typography variant="h5" component="h1">
               {localTile.get_status_display}
             </Typography>
           </CardContent>
@@ -75,11 +89,35 @@ export function TaskTile({
 
         <Divider />
 
+        <CardContent>
+          <Typography variant="body1">{currentTask?.title}</Typography>
+          <Typography variant="body2" color="textSecondary" component="p">
+            {currentTask?.description}
+          </Typography>
+          <Typography variant="body2" color="textSecondary" component="p">
+            (order: {currentTask?.order})
+          </Typography>
+        </CardContent>
+
+        <Grid container justify="center" alignItems="center">
+          <Chip label={currentTask?.task_type} size="small" />
+          <IconButton
+            color="primary"
+            size="small"
+            onClick={() => setEditTask(true)}
+          >
+            <EditIcon />
+          </IconButton>
+          <IconButton color="secondary" size="small" onClick={dummySnackbar}>
+            <DeleteIcon />
+          </IconButton>
+        </Grid>
+
         <MobileStepper
           steps={nTasks}
           position="static"
           variant="text"
-          activeStep={taskId}
+          activeStep={taskStepperIndex}
           backButton={
             <IconButton size="small" onClick={() => handleNavigate(-1)}>
               <KeyboardArrowLeft />
@@ -91,25 +129,23 @@ export function TaskTile({
             </IconButton>
           }
         />
-        <CardContent>
-          <Chip label={currentTask?.task_type} size="small" />
-          <Typography variant="body1">{currentTask?.title}</Typography>
-          <Typography variant="body2" color="textSecondary" component="p">
-            {currentTask?.description}
-          </Typography>
-          <Typography variant="body2" color="textSecondary" component="p">
-            (order: {currentTask?.order})
-          </Typography>
-        </CardContent>
 
         <Divider />
 
-        <CardActions disableSpacing style={{ justifyContent: "flex-end" }}>
-          <Chip
+        <CardActions>
+          <Typography
+            variant="body2"
+            component="p"
+            color="textSecondary"
+            style={{ marginRight: "auto", marginLeft: 8 }}
+          >
+            {moment(localTile.launch_date).calendar()}
+          </Typography>
+          {/* <Chip
             label={moment(localTile.launch_date).calendar()}
             size="small"
             style={{ marginRight: "auto" }}
-          />
+          /> */}
           <IconButton
             color="primary"
             size="small"
@@ -117,7 +153,7 @@ export function TaskTile({
           >
             <EditIcon />
           </IconButton>
-          <IconButton color="secondary" size="small">
+          <IconButton color="secondary" size="small" onClick={dummySnackbar}>
             <DeleteIcon />
           </IconButton>
         </CardActions>
@@ -138,7 +174,12 @@ export function TaskTile({
       <Dialog open={editTask} onClose={() => setEditTask(false)}>
         <DialogTitle>Edit task: {currentTask?.title}</DialogTitle>
         <DialogContent>
-          <EditTaskForm />
+          <EditTaskForm
+            task={currentTask}
+            api={api}
+            updateTask={updateCurrentTask}
+            onClose={() => setEditTask(false)}
+          />
         </DialogContent>
       </Dialog>
     </>

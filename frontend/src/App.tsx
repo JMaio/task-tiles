@@ -1,6 +1,7 @@
 import { Container, Divider, Fab, Grid, Typography } from "@material-ui/core";
 import AddIcon from "@material-ui/icons/Add";
 import { AxiosResponse } from "axios";
+import { useSnackbar } from "notistack";
 import React, { useEffect, useState } from "react";
 import api from "./api/api";
 import { Client as TileApiClient, Paths } from "./api/client";
@@ -28,7 +29,14 @@ function App() {
       },
       (e) => console.log(e)
     );
+    // eslint-disable-next-line
   }, []);
+
+  // eslint-disable-next-line
+  const { enqueueSnackbar, closeSnackbar } = useSnackbar();
+
+  const dummySnackbar = () =>
+    enqueueSnackbar("This is a placeholder for this functionality");
 
   return (
     <Container maxWidth="md" style={{ paddingTop: "1rem" }}>
@@ -49,6 +57,7 @@ function App() {
           bottom: "1rem",
           right: "1rem",
         }}
+        onClick={dummySnackbar}
       >
         <AddIcon />
       </Fab>

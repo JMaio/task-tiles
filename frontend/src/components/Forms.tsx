@@ -20,7 +20,6 @@ const useStyles = makeStyles((theme: Theme) =>
     root: {
       "& > *": {
         margin: theme.spacing(1),
-        width: "25ch",
       },
     },
   })
@@ -38,13 +37,14 @@ export function EditTileForm({
   onClose: () => void;
 }): JSX.Element {
   const {
-    register,
+    // register,
     handleSubmit,
     control,
-    watch,
-    formState: { errors },
+    // watch,
+    // formState: { errors },
   } = useForm<typeof tile>();
 
+  // eslint-disable-next-line
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
 
   const onSubmit = (data: typeof tile) => {
@@ -138,38 +138,141 @@ export function EditTileForm({
   );
 }
 
-export function EditTaskForm(): JSX.Element {
-  // Task
-  // Tile
-
+export function EditTaskForm({
+  task,
+  updateTask,
+  api,
+  onClose,
+}: {
+  task: Paths.UpdateTask.RequestBody;
+  updateTask: (updatedTask: Paths.RetrieveTask.Responses.$200) => void;
+  api: ApiClientType;
+  onClose: () => void;
+}): JSX.Element {
   const {
     register,
     handleSubmit,
-    watch,
-    formState: { errors },
-  } = useForm<Paths.RetrieveTask.Responses.$200>();
+    control,
+    // watch,
+    // formState: { errors },
+  } = useForm<typeof task>();
 
-  const onSubmit = (data: any) => console.log(data);
+  // eslint-disable-next-line
+  const { enqueueSnackbar, closeSnackbar } = useSnackbar();
 
-  console.log(watch("id")); // watch input value by passing the name of it
+  const onSubmit = (data: typeof task) => {
+    api
+      .then((c) => c.partialUpdateTask(task.id, data))
+      .then(
+        (res) => {
+          console.log(res);
+          updateTask(res.data);
+          enqueueSnackbar(`[${res.status}] ${res.statusText}`, {
+            variant: "success",
+          });
+        },
+        (err) => {
+          enqueueSnackbar(err, { variant: "error" });
+        }
+      );
+    onClose();
+  };
+
+  const classes = useStyles();
+
+  const formTaskTypes = [
+    ["survey", "Survey"],
+    ["discussion", "Discussion"],
+    ["diary", "Diary"],
+  ];
+
+  // title
+  // order
+  // description
+  // task_type
+  // parent_tile
 
   return (
     /* "handleSubmit" will validate your inputs before invoking "onSubmit" */
     <form
       onSubmit={handleSubmit(onSubmit)}
       style={{ display: "flex", flexDirection: "column" }}
+      className={classes.root}
     >
       {/* register your input into the hook by invoking the "register" function */}
       {/* <input defaultValue="test" {...register("example")} /> */}
-      {/* <TextField label="Standard" {...register("example")} /> */}
 
-      {/* include validation with required or other standard HTML validation rules */}
-      {/* <input {...register("exampleRequired", { required: true })} /> */}
-      {/* <TextField {...register("exampleRequired", { required: true })} /> */}
+      <Controller
+        name="title"
+        rules={{ required: true }}
+        control={control}
+        defaultValue={task.title}
+        render={({ field }) => (
+          <TextField variant="outlined" size="small" label="Title" {...field} />
+        )}
+      />
+      <Controller
+        name="description"
+        rules={{ required: true }}
+        control={control}
+        defaultValue={task.description}
+        render={({ field }) => (
+          <TextField
+            variant="outlined"
+            size="small"
+            label="Description"
+            {...field}
+          />
+        )}
+      />
+      <Controller
+        name="order"
+        rules={{ required: true }}
+        control={control}
+        defaultValue={task.order}
+        render={({ field }) => (
+          <TextField
+            variant="outlined"
+            size="small"
+            label="Order"
+            type="number"
+            InputProps={{
+              inputProps: { min: 0 },
+            }}
+            {...field}
+          />
+        )}
+      />
+
+      <Controller
+        name="task_type"
+        rules={{ required: true }}
+        control={control}
+        defaultValue={task.task_type}
+        render={({ field }) => (
+          <TextField
+            variant="outlined"
+            size="small"
+            select
+            label="Task type"
+            {...field}
+          >
+            {formTaskTypes.map(([k, v], i) => (
+              <MenuItem key={i} value={k}>
+                {v}
+              </MenuItem>
+            ))}
+          </TextField>
+        )}
+      />
+
       {/* errors will return when field validation fails  */}
       {/* {errors.exampleRequired && <span>This field is required</span>} */}
+      {/* {errors && <span>{errors.launch_date}</span>} */}
 
-      <input type="submit" />
+      <Button type="submit" style={{ marginLeft: "auto", marginRight: "auto" }}>
+        Save changes
+      </Button>
     </form>
   );
 }
