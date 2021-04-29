@@ -1,23 +1,37 @@
 import React from "react";
 
-import { Card, CardActionArea, CardActions, CardContent, CardHeader, CardMedia, IconButton, Typography } from "@material-ui/core";
-import { Client as TileApiClient } from "../api/client";
+import {
+  Card,
+  CardActionArea,
+  CardActions,
+  CardContent,
+  CardHeader,
+  CardMedia,
+  IconButton,
+  Typography,
+} from "@material-ui/core";
+import { Client as TileApiClient, Paths } from "../api/client";
 
-export function TaskTile(props: { api: Promise<TileApiClient> }) {
+export function TaskTile({
+  api,
+  tile,
+}: {
+  api: Promise<TileApiClient>;
+  tile: Paths.RetrieveTask.Responses.$200;
+}) {
   return (
     <Card>
       <CardActionArea>
         <CardMedia
-          image="/static/images/cards/contemplative-reptile.jpg"
-          title="Contemplative Reptile"
+          image="https://picsum.photos/300/100"
+          title="Lorem Picsum"
         />
         <CardContent>
           <Typography gutterBottom variant="h5" component="h2">
-            Lizard
+            {tile.title}
           </Typography>
           <Typography variant="body2" color="textSecondary" component="p">
-            Lizards are a widespread group of squamate reptiles, with over 6,000
-            species, ranging across all continents except Antarctica
+            {tile.description}
           </Typography>
         </CardContent>
       </CardActionArea>
