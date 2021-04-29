@@ -12,6 +12,7 @@ class TaskSerializer(serializers.HyperlinkedModelSerializer):
         model = Task
         # fields = "__all__"
         fields = [
+            "url",
             "id",
             "order",
             "title",
@@ -28,8 +29,10 @@ class TileSerializer(serializers.HyperlinkedModelSerializer):
         model = Tile
         # fields = "__all__"
         fields = [
+            "url",
             "id",
             "get_status_display",
+            "status",
             "launch_date",
             "tasks",
         ]

@@ -1,18 +1,12 @@
 from django.shortcuts import render
+from rest_framework import mixins, permissions, viewsets, generics
+
+from .models import Task, Tile
+from .serializers import TaskSerializer, TileSerializer
 
 # Create your views here.
 
 # https://www.django-rest-framework.org/tutorial/quickstart/#views
-
-from rest_framework import viewsets
-from rest_framework import permissions
-
-from .serializers import (
-    TileSerializer, TaskSerializer
-)
-from .models import (
-    Tile, Task
-)
 
 
 class TaskViewSet(viewsets.ModelViewSet):
@@ -21,7 +15,7 @@ class TaskViewSet(viewsets.ModelViewSet):
     """
     queryset = Task.objects.all().order_by('order')
     serializer_class = TaskSerializer
-    # permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.AllowAny] # any user can modify records
 
 
 class TileViewSet(viewsets.ModelViewSet):
@@ -30,4 +24,4 @@ class TileViewSet(viewsets.ModelViewSet):
     """
     queryset = Tile.objects.all()
     serializer_class = TileSerializer
-    # permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.AllowAny] # any user can modify records

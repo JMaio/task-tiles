@@ -9,6 +9,7 @@ import {
 declare namespace Components {
   namespace Schemas {
     export interface Task {
+      readonly url?: string;
       readonly id?: number;
       order: number;
       title: string;
@@ -16,10 +17,13 @@ declare namespace Components {
       task_type: "survey" | "discussion" | "diary";
     }
     export interface Tile {
+      readonly url?: string;
       readonly id?: number;
       readonly get_status_display?: string;
+      status: "LIVE" | "PEND" | "ARCH";
       launch_date: string; // date-time
       tasks: {
+        readonly url?: string;
         readonly id?: number;
         order: number;
         title: string;
@@ -30,6 +34,34 @@ declare namespace Components {
   }
 }
 declare namespace Paths {
+  namespace CreateTask {
+    export type RequestBody = Components.Schemas.Task;
+    namespace Responses {
+      export type $201 = Components.Schemas.Task;
+    }
+  }
+  namespace CreateTile {
+    export type RequestBody = Components.Schemas.Tile;
+    namespace Responses {
+      export type $201 = Components.Schemas.Tile;
+    }
+  }
+  namespace DestroyTask {
+    namespace Parameters {
+      export type Id = string;
+    }
+    export interface PathParameters {
+      id: Parameters.Id;
+    }
+  }
+  namespace DestroyTile {
+    namespace Parameters {
+      export type Id = string;
+    }
+    export interface PathParameters {
+      id: Parameters.Id;
+    }
+  }
   namespace ListTasks {
     namespace Responses {
       export type $200 = Components.Schemas.Task[];
@@ -38,6 +70,30 @@ declare namespace Paths {
   namespace ListTiles {
     namespace Responses {
       export type $200 = Components.Schemas.Tile[];
+    }
+  }
+  namespace PartialUpdateTask {
+    namespace Parameters {
+      export type Id = string;
+    }
+    export interface PathParameters {
+      id: Parameters.Id;
+    }
+    export type RequestBody = Components.Schemas.Task;
+    namespace Responses {
+      export type $200 = Components.Schemas.Task;
+    }
+  }
+  namespace PartialUpdateTile {
+    namespace Parameters {
+      export type Id = string;
+    }
+    export interface PathParameters {
+      id: Parameters.Id;
+    }
+    export type RequestBody = Components.Schemas.Tile;
+    namespace Responses {
+      export type $200 = Components.Schemas.Tile;
     }
   }
   namespace RetrieveTask {
@@ -62,6 +118,30 @@ declare namespace Paths {
       export type $200 = Components.Schemas.Tile;
     }
   }
+  namespace UpdateTask {
+    namespace Parameters {
+      export type Id = string;
+    }
+    export interface PathParameters {
+      id: Parameters.Id;
+    }
+    export type RequestBody = Components.Schemas.Task;
+    namespace Responses {
+      export type $200 = Components.Schemas.Task;
+    }
+  }
+  namespace UpdateTile {
+    namespace Parameters {
+      export type Id = string;
+    }
+    export interface PathParameters {
+      id: Parameters.Id;
+    }
+    export type RequestBody = Components.Schemas.Tile;
+    namespace Responses {
+      export type $200 = Components.Schemas.Tile;
+    }
+  }
 }
 
 export interface OperationMethods {
@@ -74,6 +154,14 @@ export interface OperationMethods {
     config?: AxiosRequestConfig  
   ): OperationResponse<Paths.ListTiles.Responses.$200>
   /**
+   * createTile - API endpoint that allows tiles to be viewed or edited.
+   */
+  'createTile'(
+    parameters?: Parameters<UnknownParamsObject> | null,
+    data?: Paths.CreateTile.RequestBody,
+    config?: AxiosRequestConfig  
+  ): OperationResponse<Paths.CreateTile.Responses.$201>
+  /**
    * retrieveTile - API endpoint that allows tiles to be viewed or edited.
    */
   'retrieveTile'(
@@ -81,6 +169,30 @@ export interface OperationMethods {
     data?: any,
     config?: AxiosRequestConfig  
   ): OperationResponse<Paths.RetrieveTile.Responses.$200>
+  /**
+   * updateTile - API endpoint that allows tiles to be viewed or edited.
+   */
+  'updateTile'(
+    parameters?: Parameters<Paths.UpdateTile.PathParameters> | null,
+    data?: Paths.UpdateTile.RequestBody,
+    config?: AxiosRequestConfig  
+  ): OperationResponse<Paths.UpdateTile.Responses.$200>
+  /**
+   * partialUpdateTile - API endpoint that allows tiles to be viewed or edited.
+   */
+  'partialUpdateTile'(
+    parameters?: Parameters<Paths.PartialUpdateTile.PathParameters> | null,
+    data?: Paths.PartialUpdateTile.RequestBody,
+    config?: AxiosRequestConfig  
+  ): OperationResponse<Paths.PartialUpdateTile.Responses.$200>
+  /**
+   * destroyTile - API endpoint that allows tiles to be viewed or edited.
+   */
+  'destroyTile'(
+    parameters?: Parameters<Paths.DestroyTile.PathParameters> | null,
+    data?: any,
+    config?: AxiosRequestConfig  
+  ): OperationResponse<any>
   /**
    * listTasks - API endpoint that allows tasks to be viewed or edited.
    */
@@ -90,6 +202,14 @@ export interface OperationMethods {
     config?: AxiosRequestConfig  
   ): OperationResponse<Paths.ListTasks.Responses.$200>
   /**
+   * createTask - API endpoint that allows tasks to be viewed or edited.
+   */
+  'createTask'(
+    parameters?: Parameters<UnknownParamsObject> | null,
+    data?: Paths.CreateTask.RequestBody,
+    config?: AxiosRequestConfig  
+  ): OperationResponse<Paths.CreateTask.Responses.$201>
+  /**
    * retrieveTask - API endpoint that allows tasks to be viewed or edited.
    */
   'retrieveTask'(
@@ -97,6 +217,30 @@ export interface OperationMethods {
     data?: any,
     config?: AxiosRequestConfig  
   ): OperationResponse<Paths.RetrieveTask.Responses.$200>
+  /**
+   * updateTask - API endpoint that allows tasks to be viewed or edited.
+   */
+  'updateTask'(
+    parameters?: Parameters<Paths.UpdateTask.PathParameters> | null,
+    data?: Paths.UpdateTask.RequestBody,
+    config?: AxiosRequestConfig  
+  ): OperationResponse<Paths.UpdateTask.Responses.$200>
+  /**
+   * partialUpdateTask - API endpoint that allows tasks to be viewed or edited.
+   */
+  'partialUpdateTask'(
+    parameters?: Parameters<Paths.PartialUpdateTask.PathParameters> | null,
+    data?: Paths.PartialUpdateTask.RequestBody,
+    config?: AxiosRequestConfig  
+  ): OperationResponse<Paths.PartialUpdateTask.Responses.$200>
+  /**
+   * destroyTask - API endpoint that allows tasks to be viewed or edited.
+   */
+  'destroyTask'(
+    parameters?: Parameters<Paths.DestroyTask.PathParameters> | null,
+    data?: any,
+    config?: AxiosRequestConfig  
+  ): OperationResponse<any>
 }
 
 export interface PathsDictionary {
@@ -109,6 +253,14 @@ export interface PathsDictionary {
       data?: any,
       config?: AxiosRequestConfig  
     ): OperationResponse<Paths.ListTiles.Responses.$200>
+    /**
+     * createTile - API endpoint that allows tiles to be viewed or edited.
+     */
+    'post'(
+      parameters?: Parameters<UnknownParamsObject> | null,
+      data?: Paths.CreateTile.RequestBody,
+      config?: AxiosRequestConfig  
+    ): OperationResponse<Paths.CreateTile.Responses.$201>
   }
   ['/api/v1/tiles/{id}/']: {
     /**
@@ -119,6 +271,30 @@ export interface PathsDictionary {
       data?: any,
       config?: AxiosRequestConfig  
     ): OperationResponse<Paths.RetrieveTile.Responses.$200>
+    /**
+     * updateTile - API endpoint that allows tiles to be viewed or edited.
+     */
+    'put'(
+      parameters?: Parameters<Paths.UpdateTile.PathParameters> | null,
+      data?: Paths.UpdateTile.RequestBody,
+      config?: AxiosRequestConfig  
+    ): OperationResponse<Paths.UpdateTile.Responses.$200>
+    /**
+     * partialUpdateTile - API endpoint that allows tiles to be viewed or edited.
+     */
+    'patch'(
+      parameters?: Parameters<Paths.PartialUpdateTile.PathParameters> | null,
+      data?: Paths.PartialUpdateTile.RequestBody,
+      config?: AxiosRequestConfig  
+    ): OperationResponse<Paths.PartialUpdateTile.Responses.$200>
+    /**
+     * destroyTile - API endpoint that allows tiles to be viewed or edited.
+     */
+    'delete'(
+      parameters?: Parameters<Paths.DestroyTile.PathParameters> | null,
+      data?: any,
+      config?: AxiosRequestConfig  
+    ): OperationResponse<any>
   }
   ['/api/v1/tasks/']: {
     /**
@@ -129,6 +305,14 @@ export interface PathsDictionary {
       data?: any,
       config?: AxiosRequestConfig  
     ): OperationResponse<Paths.ListTasks.Responses.$200>
+    /**
+     * createTask - API endpoint that allows tasks to be viewed or edited.
+     */
+    'post'(
+      parameters?: Parameters<UnknownParamsObject> | null,
+      data?: Paths.CreateTask.RequestBody,
+      config?: AxiosRequestConfig  
+    ): OperationResponse<Paths.CreateTask.Responses.$201>
   }
   ['/api/v1/tasks/{id}/']: {
     /**
@@ -139,6 +323,30 @@ export interface PathsDictionary {
       data?: any,
       config?: AxiosRequestConfig  
     ): OperationResponse<Paths.RetrieveTask.Responses.$200>
+    /**
+     * updateTask - API endpoint that allows tasks to be viewed or edited.
+     */
+    'put'(
+      parameters?: Parameters<Paths.UpdateTask.PathParameters> | null,
+      data?: Paths.UpdateTask.RequestBody,
+      config?: AxiosRequestConfig  
+    ): OperationResponse<Paths.UpdateTask.Responses.$200>
+    /**
+     * partialUpdateTask - API endpoint that allows tasks to be viewed or edited.
+     */
+    'patch'(
+      parameters?: Parameters<Paths.PartialUpdateTask.PathParameters> | null,
+      data?: Paths.PartialUpdateTask.RequestBody,
+      config?: AxiosRequestConfig  
+    ): OperationResponse<Paths.PartialUpdateTask.Responses.$200>
+    /**
+     * destroyTask - API endpoint that allows tasks to be viewed or edited.
+     */
+    'delete'(
+      parameters?: Parameters<Paths.DestroyTask.PathParameters> | null,
+      data?: any,
+      config?: AxiosRequestConfig  
+    ): OperationResponse<any>
   }
 }
 

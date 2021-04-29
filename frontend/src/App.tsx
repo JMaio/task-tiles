@@ -7,6 +7,8 @@ import { Client as TileApiClient, Paths } from "./api/client";
 import "./App.css";
 import { TaskTile } from "./components/TaskTile";
 
+export type ApiClientType = Promise<TileApiClient>;
+
 function App() {
   const ApiClient = api.getClient<TileApiClient>();
 
@@ -29,9 +31,9 @@ function App() {
   }, []);
 
   return (
-    <Container maxWidth="md">
+    <Container maxWidth="md" style={{ paddingTop: "1rem" }}>
       <Typography style={{ color: "#fefefe", fontSize: "3rem" }} variant="h1">
-        Piles 'o Tiles
+        Piles o' Tiles
       </Typography>
       <Divider style={{ margin: "1rem 0", backgroundColor: "#fefefe" }} />
       <Grid container spacing={2}>
