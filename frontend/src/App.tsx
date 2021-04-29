@@ -13,15 +13,15 @@ function App() {
   console.log(ApiClient);
 
   const [tiles, setTiles] = useState<
-    AxiosResponse<Paths.ListTasks.Responses.$200>
+    AxiosResponse<Paths.ListTiles.Responses.$200>
   >();
 
   useEffect(() => {
     ApiClient.then(
       (c: TileApiClient) => {
-        c.listTasks().then((tasks) => {
-          setTiles(tasks);
-          console.log(tasks);
+        c.listTiles().then((t) => {
+          setTiles(t);
+          console.log(t);
         });
       },
       (e) => console.log(e)
@@ -36,7 +36,7 @@ function App() {
       <Divider style={{ margin: "1rem 0", backgroundColor: "#fefefe" }} />
       <Grid container spacing={2}>
         {tiles?.data.map((t) => (
-          <Grid item xs={12} sm={6} md={4}>
+          <Grid item xs={12} sm={6} md={4} key={t.status}>
             <TaskTile api={ApiClient} tile={t} />
           </Grid>
         ))}
