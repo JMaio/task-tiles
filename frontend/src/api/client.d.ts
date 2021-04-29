@@ -9,17 +9,23 @@ import {
 declare namespace Components {
   namespace Schemas {
     export interface Task {
-      readonly url?: string;
-      title: string;
+      readonly id?: number;
       order: number;
+      title: string;
       description: string;
       task_type: "survey" | "discussion" | "diary";
-      parent_tile: string;
     }
     export interface Tile {
-      readonly url?: string;
+      readonly id?: number;
+      readonly get_status_display?: string;
       launch_date: string; // date-time
-      status: "LIVE" | "PEND" | "ARCH";
+      tasks: {
+        readonly id?: number;
+        order: number;
+        title: string;
+        description: string;
+        task_type: "survey" | "discussion" | "diary";
+      }[];
     }
   }
 }

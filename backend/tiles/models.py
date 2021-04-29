@@ -57,6 +57,7 @@ class Task(models.Model):
 
     parent_tile = models.ForeignKey(
         Tile,
+        related_name='tasks',
         on_delete=models.PROTECT
     )
 

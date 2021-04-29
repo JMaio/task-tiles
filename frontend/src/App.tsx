@@ -36,7 +36,7 @@ function App() {
       <Divider style={{ margin: "1rem 0", backgroundColor: "#fefefe" }} />
       <Grid container spacing={2}>
         {tiles?.data.map((t) => (
-          <Grid item xs={12} sm={6} md={4} key={t.status}>
+          <Grid item xs={12} sm={6} md={4} key={t.id}>
             <TaskTile api={ApiClient} tile={t} />
           </Grid>
         ))}
