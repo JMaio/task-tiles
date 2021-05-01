@@ -1,4 +1,5 @@
 import {
+  Button,
   Card,
   CardActionArea,
   CardActions,
@@ -14,7 +15,7 @@ import {
   MobileStepper,
   Typography,
 } from "@material-ui/core";
-import { KeyboardArrowLeft, KeyboardArrowRight } from "@material-ui/icons";
+import { Add, KeyboardArrowLeft, KeyboardArrowRight } from "@material-ui/icons";
 import DeleteIcon from "@material-ui/icons/Delete";
 import EditIcon from "@material-ui/icons/Edit";
 import moment from "moment";
@@ -22,16 +23,18 @@ import { useSnackbar } from "notistack";
 import React, { useEffect, useState } from "react";
 import { Paths } from "../api/client";
 import { ApiClientType } from "../App";
-import { EditTaskForm, EditTileForm } from "./Forms";
+import { EditTaskForm, TileForm } from "./Forms";
 
 const mod = (n: number, m: number) => ((n % m) + m) % m;
 
 export function TaskTile({
   api,
   tile,
+  remove,
 }: {
   api: ApiClientType;
   tile: Paths.RetrieveTile.Responses.$200;
+  remove: (id: number) => void;
 }) {
   const [localTile, updateLocalTile] = useState<typeof tile>(tile);
   const nTasks = localTile.tasks.length;
@@ -62,8 +65,13 @@ export function TaskTile({
     setTaskStepperIndex((prev) => mod(prev + dir, nTasks));
   };
 
+  const [newTask, setNewTask] = useState(false);
+
   const [editTile, setEditTile] = useState(false);
   const [editTask, setEditTask] = useState(false);
+
+  const [deleteTile, setDeleteTile] = useState(false);
+  const [deleteTask, setDeleteTask] = useState(false);
 
   // eslint-disable-next-line
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
@@ -88,47 +96,60 @@ export function TaskTile({
         </CardActionArea>
 
         <Divider />
+        {localTile.tasks.length ? (
+          <>
+            <CardContent>
+              <Typography variant="body1">{currentTask?.title}</Typography>
+              <Typography variant="body2" color="textSecondary" component="p">
+                {currentTask?.description}
+              </Typography>
+              <Typography variant="body2" color="textSecondary" component="p">
+                (order: {currentTask?.order})
+              </Typography>
+            </CardContent>
 
-        <CardContent>
-          <Typography variant="body1">{currentTask?.title}</Typography>
-          <Typography variant="body2" color="textSecondary" component="p">
-            {currentTask?.description}
-          </Typography>
-          <Typography variant="body2" color="textSecondary" component="p">
-            (order: {currentTask?.order})
-          </Typography>
-        </CardContent>
+            <Grid container justify="center" alignItems="center">
+              <Chip label={currentTask?.task_type} size="small" />
+              <IconButton
+                color="primary"
+                size="small"
+                onClick={() => setEditTask(true)}
+              >
+                <EditIcon />
+              </IconButton>
+              <IconButton
+                color="secondary"
+                size="small"
+                onClick={dummySnackbar}
+              >
+                <DeleteIcon />
+              </IconButton>
+            </Grid>
 
-        <Grid container justify="center" alignItems="center">
-          <Chip label={currentTask?.task_type} size="small" />
-          <IconButton
-            color="primary"
-            size="small"
-            onClick={() => setEditTask(true)}
-          >
-            <EditIcon />
-          </IconButton>
-          <IconButton color="secondary" size="small" onClick={dummySnackbar}>
-            <DeleteIcon />
-          </IconButton>
-        </Grid>
-
-        <MobileStepper
-          steps={nTasks}
-          position="static"
-          variant="text"
-          activeStep={taskStepperIndex}
-          backButton={
-            <IconButton size="small" onClick={() => handleNavigate(-1)}>
-              <KeyboardArrowLeft />
-            </IconButton>
-          }
-          nextButton={
-            <IconButton size="small" onClick={() => handleNavigate(+1)}>
-              <KeyboardArrowRight />
-            </IconButton>
-          }
-        />
+            <MobileStepper
+              steps={nTasks}
+              position="static"
+              variant="text"
+              activeStep={taskStepperIndex}
+              backButton={
+                <IconButton size="small" onClick={() => handleNavigate(-1)}>
+                  <KeyboardArrowLeft />
+                </IconButton>
+              }
+              nextButton={
+                <IconButton size="small" onClick={() => handleNavigate(+1)}>
+                  <KeyboardArrowRight />
+                </IconButton>
+              }
+            />
+          </>
+        ) : (
+          <CardContent>
+            <Typography variant="body1" color="textSecondary" align="center">
+              (No tasks)
+            </Typography>
+          </CardContent>
+        )}
 
         <Divider />
 
@@ -147,13 +168,25 @@ export function TaskTile({
             style={{ marginRight: "auto" }}
           /> */}
           <IconButton
+            // color="primary"
+            size="small"
+            onClick={() => setNewTask(true)}
+            style={{ color: "green" }}
+          >
+            <Add />
+          </IconButton>
+          <IconButton
             color="primary"
             size="small"
             onClick={() => setEditTile(true)}
           >
             <EditIcon />
           </IconButton>
-          <IconButton color="secondary" size="small" onClick={dummySnackbar}>
+          <IconButton
+            color="secondary"
+            size="small"
+            onClick={() => setDeleteTile(true)}
+          >
             <DeleteIcon />
           </IconButton>
         </CardActions>
@@ -162,12 +195,68 @@ export function TaskTile({
       <Dialog open={editTile} onClose={() => setEditTile(false)}>
         <DialogTitle>Edit tile</DialogTitle>
         <DialogContent>
-          <EditTileForm
+          <TileForm
             tile={localTile}
             updateTile={updateLocalTile}
             api={api}
+            apiLogic={(data: typeof tile) => {
+              const parsedDate = moment(data.launch_date).toISOString();
+              console.log(data.launch_date);
+              console.log(parsedDate);
+              return api.then((c) =>
+                c.partialUpdateTile(tile.id, {
+                  ...data,
+                  launch_date: parsedDate,
+                })
+              );
+            }}
             onClose={() => setEditTile(false)}
           />
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={deleteTile} onClose={() => setDeleteTile(false)}>
+        <DialogTitle>Delete tile?</DialogTitle>
+        <DialogContent style={{ display: "flex" }}>
+          <Button
+            color="secondary"
+            style={{ margin: "auto" }}
+            startIcon={<DeleteIcon />}
+            onClick={() => {
+              api
+                .then((c) => c.destroyTile(tile.id))
+                .then(
+                  (res) => {
+                    enqueueSnackbar(`[${res.status}] ${res.statusText}`, {
+                      variant: "success",
+                    });
+                    remove(tile.id as number);
+                  },
+                  (err) => {
+                    enqueueSnackbar(String(err), {
+                      variant: "error",
+                    });
+                  }
+                );
+
+              setDeleteTile(false);
+            }}
+          >
+            Delete
+          </Button>
+
+          {/* <TileForm
+            tile={undefined}
+            updateTile={updateLocalTile}
+            api={api}
+            apiLogic={(data: typeof tile) => {
+              const parsedDate = moment(data.launch_date).toISOString();
+              console.log(data.launch_date);
+              console.log(parsedDate);
+              return;
+            }}
+            onClose={() => setEditTile(false)}
+          /> */}
         </DialogContent>
       </Dialog>
 

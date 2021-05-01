@@ -8,11 +8,12 @@ import {
   Theme,
 } from "@material-ui/core";
 import { DateTimePicker, MuiPickersUtilsProvider } from "@material-ui/pickers";
+import { AxiosResponse } from "axios";
 import moment from "moment";
 import { useSnackbar } from "notistack";
 import React, { Dispatch, SetStateAction } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { Paths } from "../api/client";
+import { Components, Paths } from "../api/client";
 import { ApiClientType } from "../App";
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -25,16 +26,21 @@ const useStyles = makeStyles((theme: Theme) =>
   })
 );
 
-export function EditTileForm({
+export function TileForm({
   tile,
   updateTile,
   api,
   onClose,
+  apiLogic,
 }: {
-  tile: Paths.UpdateTile.RequestBody;
-  updateTile: Dispatch<SetStateAction<Paths.UpdateTile.Responses.$200>>;
+  // text to display in the header (Add / Edit)
+  tile?: Paths.UpdateTile.RequestBody;
+  updateTile: (t: Components.Schemas.Tile) => void;
   api: ApiClientType;
   onClose: () => void;
+  apiLogic: (
+    data: Components.Schemas.Tile
+  ) => Promise<AxiosResponse<Components.Schemas.Tile>>;
 }): JSX.Element {
   const {
     // register,
@@ -42,31 +48,45 @@ export function EditTileForm({
     control,
     // watch,
     // formState: { errors },
-  } = useForm<typeof tile>();
+  } = useForm<Components.Schemas.Tile>();
 
   // eslint-disable-next-line
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
 
-  const onSubmit = (data: typeof tile) => {
-    const parsedDate = moment(data.launch_date).toISOString();
-    console.log(data.launch_date);
-    console.log(parsedDate);
-    api
-      .then((c) =>
-        c.partialUpdateTile(tile.id, { ...data, launch_date: parsedDate })
-      )
-      .then(
-        (res) => {
-          console.log(res);
-          updateTile(res.data);
-          enqueueSnackbar(`[${res.status}] ${res.statusText}`, {
-            variant: "success",
-          });
-        },
-        (err) => {
-          enqueueSnackbar(err, { variant: "error" });
-        }
-      );
+  const onSubmit = (data: Components.Schemas.Tile) => {
+    // call the api logic
+    apiLogic(data).then(
+      (res) => {
+        console.log(res);
+        console.log(res.data);
+        updateTile(res.data);
+        enqueueSnackbar(`[${res.status}] ${res.statusText}`, {
+          variant: "success",
+        });
+      },
+      (err) => {
+        console.log(err);
+        enqueueSnackbar(String(err), { variant: "error" });
+      }
+    );
+    // const parsedDate = moment(data.launch_date).toISOString();
+    // console.log(data.launch_date);
+    // console.log(parsedDate);
+    // api.then((c) =>
+    //   c.partialUpdateTile(tile.id, { ...data, launch_date: parsedDate })
+    // );
+    //   .then(
+    //     (res) => {
+    //       console.log(res);
+    //       updateTile(res.data);
+    //       enqueueSnackbar(`[${res.status}] ${res.statusText}`, {
+    //         variant: "success",
+    //       });
+    //     },
+    //     (err) => {
+    //       enqueueSnackbar(err, { variant: "error" });
+    //     }
+    //   );
     onClose();
   };
 
@@ -94,7 +114,7 @@ export function EditTileForm({
           name="launch_date"
           rules={{ required: true }}
           control={control}
-          defaultValue={moment(tile.launch_date).format("yyyy-MM-DDThh:mm")}
+          defaultValue={moment(tile?.launch_date).format("yyyy-MM-DDThh:mm")}
           render={({ field }) => (
             <DateTimePicker
               label="Launch date"
@@ -111,7 +131,7 @@ export function EditTileForm({
         name="status"
         rules={{ required: true }}
         control={control}
-        defaultValue={tile.status}
+        defaultValue={tile?.status}
         render={({ field }) => (
           <TextField
             variant="outlined"
@@ -172,7 +192,7 @@ export function EditTaskForm({
           });
         },
         (err) => {
-          enqueueSnackbar(err, { variant: "error" });
+          enqueueSnackbar(String(err), { variant: "error" });
         }
       );
     onClose();

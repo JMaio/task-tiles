@@ -23,7 +23,7 @@ class TaskSerializer(serializers.HyperlinkedModelSerializer):
 
 
 class TileSerializer(serializers.HyperlinkedModelSerializer):
-    tasks = TaskSerializer(many=True)
+    tasks = TaskSerializer(many=True, required=False)
 
     class Meta:
         model = Tile
@@ -36,3 +36,7 @@ class TileSerializer(serializers.HyperlinkedModelSerializer):
             "launch_date",
             "tasks",
         ]
+        # https://stackoverflow.com/a/58162118/9184658
+        # extra_kwargs = {
+        #     'tasks': {'required': False},
+        # }
