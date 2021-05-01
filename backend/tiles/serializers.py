@@ -7,7 +7,7 @@ from rest_framework import serializers
 # https://www.django-rest-framework.org/tutorial/quickstart/#serializers
 
 
-class TaskSerializer(serializers.HyperlinkedModelSerializer):
+class TaskSerializer(serializers.ModelSerializer):
     class Meta:
         model = Task
         # fields = "__all__"
@@ -18,12 +18,15 @@ class TaskSerializer(serializers.HyperlinkedModelSerializer):
             "title",
             "description",
             "task_type",
-            # "parent_tile_id"
+            "parent_tile",
+            # "parent_tile_id",
         ]
 
 
-class TileSerializer(serializers.HyperlinkedModelSerializer):
+class TileSerializer(serializers.ModelSerializer):
+    # tasks = TaskSerializer(many=True, read_only=True)
     tasks = TaskSerializer(many=True, required=False)
+    # tasks = serializers.PrimaryKeyRelatedField(many=True, required=False, read_only=True)
 
     class Meta:
         model = Tile

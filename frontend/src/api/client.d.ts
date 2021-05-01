@@ -15,6 +15,7 @@ declare namespace Components {
       title: string;
       description: string;
       task_type: "survey" | "discussion" | "diary";
+      parent_tile: number;
     }
     export interface Tile {
       readonly url?: string;
@@ -29,6 +30,7 @@ declare namespace Components {
         title: string;
         description: string;
         task_type: "survey" | "discussion" | "diary";
+        parent_tile: number;
       }[];
     }
   }

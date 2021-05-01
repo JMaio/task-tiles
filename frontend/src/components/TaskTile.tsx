@@ -21,9 +21,9 @@ import EditIcon from "@material-ui/icons/Edit";
 import moment from "moment";
 import { useSnackbar } from "notistack";
 import React, { useEffect, useState } from "react";
-import { Paths } from "../api/client";
+import { Components } from "../api/client";
 import { ApiClientType } from "../App";
-import { EditTaskForm, TileForm } from "./Forms";
+import { TaskForm, TileForm } from "./Forms";
 
 const mod = (n: number, m: number) => ((n % m) + m) % m;
 
@@ -33,24 +33,20 @@ export function TaskTile({
   remove,
 }: {
   api: ApiClientType;
-  tile: Paths.RetrieveTile.Responses.$200;
+  tile: Components.Schemas.Tile;
   remove: (id: number) => void;
 }) {
-  const [localTile, updateLocalTile] = useState<typeof tile>(tile);
-  const nTasks = localTile.tasks.length;
+  const [localTile, updateLocalTile] = useState<Components.Schemas.Tile>(tile);
 
   const [taskStepperIndex, setTaskStepperIndex] = useState(0);
 
-  const [
-    currentTask,
-    setCurrentTask,
-  ] = useState<Paths.RetrieveTask.Responses.$200>(localTile.tasks[0]);
+  const [currentTask, setCurrentTask] = useState<
+    Components.Schemas.Task | undefined
+  >();
 
   // stores changes made to a task without querying the API
-  const updateCurrentTask = (
-    updatedTask: Paths.RetrieveTask.Responses.$200
-  ) => {
-    updateLocalTile((t: typeof tile) => {
+  const updateCurrentTask = (updatedTask: Components.Schemas.Task) => {
+    updateLocalTile((t: Components.Schemas.Tile) => {
       t.tasks[taskStepperIndex] = updatedTask;
       setCurrentTask(updatedTask);
       return t;
@@ -58,11 +54,34 @@ export function TaskTile({
   };
 
   useEffect(() => {
+    // update task when tile changes
     setCurrentTask(localTile.tasks[taskStepperIndex]);
   }, [taskStepperIndex, localTile]);
 
+  const addTask = (newTask: Components.Schemas.Task) => {
+    updateLocalTile((tile: Components.Schemas.Tile) => {
+      tile.tasks.push(newTask);
+      return tile;
+    });
+    // update task when tile changes
+    const newIndex = localTile.tasks.length - 1;
+    setTaskStepperIndex(newIndex);
+    setCurrentTask(localTile.tasks[newIndex]);
+  };
+
+  const removeTask = (taskIdx: number) => {
+    updateLocalTile((tile: Components.Schemas.Tile) => {
+      tile.tasks = tile.tasks.filter((t, i) => i != taskIdx);
+      return tile;
+    });
+    // update task when tile changes
+    const newIndex = localTile.tasks.length - 1;
+    setTaskStepperIndex(newIndex);
+    setCurrentTask(localTile.tasks[newIndex]);
+  };
+
   const handleNavigate = (dir: number) => {
-    setTaskStepperIndex((prev) => mod(prev + dir, nTasks));
+    setTaskStepperIndex((prev) => mod(prev + dir, localTile.tasks.length));
   };
 
   const [newTask, setNewTask] = useState(false);
@@ -72,6 +91,10 @@ export function TaskTile({
 
   const [deleteTile, setDeleteTile] = useState(false);
   const [deleteTask, setDeleteTask] = useState(false);
+
+  // const removeTask = (taskId: number) => {
+  //   setTi((oldTileList) => oldTileList.filter((t) => t.id != tileId));
+  // };
 
   // eslint-disable-next-line
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
@@ -120,14 +143,14 @@ export function TaskTile({
               <IconButton
                 color="secondary"
                 size="small"
-                onClick={dummySnackbar}
+                onClick={() => setDeleteTask(true)}
               >
                 <DeleteIcon />
               </IconButton>
             </Grid>
 
             <MobileStepper
-              steps={nTasks}
+              steps={localTile.tasks.length}
               position="static"
               variant="text"
               activeStep={taskStepperIndex}
@@ -162,11 +185,7 @@ export function TaskTile({
           >
             {moment(localTile.launch_date).calendar()}
           </Typography>
-          {/* <Chip
-            label={moment(localTile.launch_date).calendar()}
-            size="small"
-            style={{ marginRight: "auto" }}
-          /> */}
+
           <IconButton
             // color="primary"
             size="small"
@@ -244,31 +263,73 @@ export function TaskTile({
           >
             Delete
           </Button>
-
-          {/* <TileForm
-            tile={undefined}
-            updateTile={updateLocalTile}
-            api={api}
-            apiLogic={(data: typeof tile) => {
-              const parsedDate = moment(data.launch_date).toISOString();
-              console.log(data.launch_date);
-              console.log(parsedDate);
-              return;
-            }}
-            onClose={() => setEditTile(false)}
-          /> */}
         </DialogContent>
       </Dialog>
 
       <Dialog open={editTask} onClose={() => setEditTask(false)}>
         <DialogTitle>Edit task: {currentTask?.title}</DialogTitle>
         <DialogContent>
-          <EditTaskForm
+          <TaskForm
             task={currentTask}
             api={api}
             updateTask={updateCurrentTask}
             onClose={() => setEditTask(false)}
+            apiLogic={(data) =>
+              api.then((c) => c.partialUpdateTask(currentTask?.id, data))
+            }
           />
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={newTask} onClose={() => setNewTask(false)}>
+        <DialogTitle>New task</DialogTitle>
+        <DialogContent>
+          <TaskForm
+            task={undefined}
+            api={api}
+            updateTask={addTask}
+            onClose={() => setNewTask(false)}
+            apiLogic={(data) =>
+              api.then((c) =>
+                c.createTask(null, {
+                  ...data,
+                  // give this a sensible (fake) default?
+                  parent_tile: localTile.id || -1,
+                })
+              )
+            }
+          />
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={deleteTask} onClose={() => setDeleteTask(false)}>
+        <DialogTitle>Delete task "{currentTask?.title}"?</DialogTitle>
+        <DialogContent style={{ display: "flex" }}>
+          <Button
+            color="secondary"
+            style={{ margin: "auto" }}
+            startIcon={<DeleteIcon />}
+            onClick={() => {
+              api
+                .then((c) => c.destroyTask(currentTask?.id))
+                .then(
+                  (res) => {
+                    enqueueSnackbar(`[${res.status}] ${res.statusText}`, {
+                      variant: "success",
+                    });
+                    removeTask(taskStepperIndex as number);
+                  },
+                  (err) => {
+                    enqueueSnackbar(String(err), {
+                      variant: "error",
+                    });
+                  }
+                );
+              setDeleteTask(false);
+            }}
+          >
+            Delete
+          </Button>
         </DialogContent>
       </Dialog>
     </>

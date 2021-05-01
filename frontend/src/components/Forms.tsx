@@ -34,7 +34,7 @@ export function TileForm({
   apiLogic,
 }: {
   // text to display in the header (Add / Edit)
-  tile?: Paths.UpdateTile.RequestBody;
+  tile?: Components.Schemas.Tile;
   updateTile: (t: Components.Schemas.Tile) => void;
   api: ApiClientType;
   onClose: () => void;
@@ -158,16 +158,20 @@ export function TileForm({
   );
 }
 
-export function EditTaskForm({
+export function TaskForm({
   task,
   updateTask,
   api,
   onClose,
+  apiLogic,
 }: {
-  task: Paths.UpdateTask.RequestBody;
-  updateTask: (updatedTask: Paths.RetrieveTask.Responses.$200) => void;
+  task?: Components.Schemas.Task;
+  updateTask: (updatedTask: Components.Schemas.Task) => void;
   api: ApiClientType;
   onClose: () => void;
+  apiLogic: (
+    data: Components.Schemas.Task
+  ) => Promise<AxiosResponse<Components.Schemas.Task>>;
 }): JSX.Element {
   const {
     register,
@@ -175,26 +179,24 @@ export function EditTaskForm({
     control,
     // watch,
     // formState: { errors },
-  } = useForm<typeof task>();
+  } = useForm<Components.Schemas.Task>();
 
   // eslint-disable-next-line
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
 
-  const onSubmit = (data: typeof task) => {
-    api
-      .then((c) => c.partialUpdateTask(task.id, data))
-      .then(
-        (res) => {
-          console.log(res);
-          updateTask(res.data);
-          enqueueSnackbar(`[${res.status}] ${res.statusText}`, {
-            variant: "success",
-          });
-        },
-        (err) => {
-          enqueueSnackbar(String(err), { variant: "error" });
-        }
-      );
+  const onSubmit = (data: Components.Schemas.Task) => {
+    apiLogic(data).then(
+      (res) => {
+        console.log(res);
+        updateTask(res.data);
+        enqueueSnackbar(`[${res.status}] ${res.statusText}`, {
+          variant: "success",
+        });
+      },
+      (err) => {
+        enqueueSnackbar(String(err), { variant: "error" });
+      }
+    );
     onClose();
   };
 
@@ -226,7 +228,7 @@ export function EditTaskForm({
         name="title"
         rules={{ required: true }}
         control={control}
-        defaultValue={task.title}
+        defaultValue={task?.title}
         render={({ field }) => (
           <TextField variant="outlined" size="small" label="Title" {...field} />
         )}
@@ -235,7 +237,7 @@ export function EditTaskForm({
         name="description"
         rules={{ required: true }}
         control={control}
-        defaultValue={task.description}
+        defaultValue={task?.description}
         render={({ field }) => (
           <TextField
             variant="outlined"
@@ -249,7 +251,7 @@ export function EditTaskForm({
         name="order"
         rules={{ required: true }}
         control={control}
-        defaultValue={task.order}
+        defaultValue={task?.order}
         render={({ field }) => (
           <TextField
             variant="outlined"
@@ -268,7 +270,7 @@ export function EditTaskForm({
         name="task_type"
         rules={{ required: true }}
         control={control}
-        defaultValue={task.task_type}
+        defaultValue={task?.task_type}
         render={({ field }) => (
           <TextField
             variant="outlined"

@@ -63,3 +63,8 @@ class Task(models.Model):
 
     def __str__(self) -> str:
         return f"Task: {self.title} ({self.get_task_type_display()} in {self.parent_tile})"
+
+    class Meta:
+        # set the ordering of the tasks
+        # https://stackoverflow.com/a/60214106/9184658
+        ordering = ["order", "id"]
