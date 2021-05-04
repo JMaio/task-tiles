@@ -1,5 +1,7 @@
 # task-tiles
 
+A simple Django REST API + React front-end for managing cards with multiple nested elements.
+
 ## backend
 
 Managed with `pipenv`. 
